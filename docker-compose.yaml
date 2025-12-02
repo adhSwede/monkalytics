@@ -14,11 +14,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U monka"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
     networks:
       - monkalytics-network
 
@@ -37,24 +32,9 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     networks:
       - monkalytics-network
-    # healthcheck:
-    #   test:
-    #     [
-    #       "CMD",
-    #       "wget",
-    #       "--quiet",
-    #       "--tries=1",
-    #       "--spider",
-    #       "http://localhost:8080/actuator/health",
-    #     ]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 5
-    #   start_period: 40s
 
   # frontend:
   #   build:
