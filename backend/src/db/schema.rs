@@ -23,6 +23,7 @@ async fn init_streams_table(pool: &PgPool) -> Result<(), sqlx::Error> {
             started_at TIMESTAMPTZ,
             language TEXT,
             thumbnail_url TEXT,
+            tag_ids TEXT,
             tags TEXT,
             is_mature BOOLEAN NOT NULL DEFAULT false,
             polled_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

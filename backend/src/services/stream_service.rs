@@ -11,41 +11,65 @@ pub async fn fetch_and_store_streams(
 ) -> Result<(), Box<dyn std::error::Error>> {
     println!("Starting fetch_and_store_streams...");
 
-    let streams_response = fetch_top_streams(client_id, access_token).await?;
-    let streams_count = streams_response.data.len();
+    let mut cursor: Option<String> = None;
+    let mut total_stored = 0;
+    let max_pages = 200; // Stop after x pages
 
-    println!("Fetched {} streams from API", streams_count);
+    for page in 1..=max_pages {
+        println!("Fetching page {}/{}", page, max_pages);
 
-    // for dto in streams_response.data {
-    for (i, dto) in streams_response.data.into_iter().enumerate() {
-        println!("Inserting stream {}/{}", i + 1, streams_count);
+        let streams_response =
+            fetch_top_streams(client_id, access_token, cursor.as_deref()).await?;
 
-        let stream = Stream {
-            id: None,
-            stream_id: dto.id,
-            user_id: dto.user_id,
-            user_login: dto.user_login,
-            user_name: dto.user_name,
-            game_id: Some(dto.game_id),
-            game_name: Some(dto.game_name),
-            stream_type: dto.stream_type,
-            title: Some(dto.title),
-            viewer_count: dto.viewer_count,
-            started_at: Some(dto.started_at),
-            language: Some(dto.language),
-            thumbnail_url: Some(dto.thumbnail_url),
-            tags: Some(dto.tags.join(",")),
-            is_mature: dto.is_mature,
-            polled_at: None,
-        };
+        let streams_count = streams_response.data.len();
 
-        insert_stream(pool, &stream).await?;
+        // If viewers < 5 stop.
+        if let Some(last_stream) = streams_response.data.last() {
+            if last_stream.viewer_count < 5 {
+                println!("Reached streams with <5 viewers, stopping");
+                break;
+            }
+        }
+
+        // Insert streams
+        for dto in streams_response.data {
+            let stream = Stream {
+                id: None,
+                stream_id: dto.id,
+                user_id: dto.user_id,
+                user_login: dto.user_login,
+                user_name: dto.user_name,
+                game_id: dto.game_id,
+                game_name: dto.game_name,
+                stream_type: dto.stream_type,
+                title: dto.title,
+                viewer_count: dto.viewer_count,
+                started_at: dto.started_at,
+                language: dto.language,
+                thumbnail_url: dto.thumbnail_url,
+                tag_ids: dto.tag_ids.map(|v| v.join(",")).or(Some(String::new())),
+                tags: dto.tags.map(|v| v.join(",")).or(Some(String::new())),
+                is_mature: dto.is_mature,
+                polled_at: None,
+            };
+            insert_stream(pool, &stream).await?;
+        }
+
+        total_stored += streams_count;
+
+        // Get next cursor
+        cursor = streams_response.pagination.and_then(|p| p.cursor);
+
+        if cursor.is_none() {
+            println!("No more pages");
+            break;
+        }
     }
 
     println!(
-        "[{}] ✓ Stored {} streams",
+        "[{}] ✓ Stored {} streams total",
         Local::now().format("%Y-%m-%d %H:%M:%S"),
-        streams_count
+        total_stored
     );
     Ok(())
 }

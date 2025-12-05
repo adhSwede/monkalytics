@@ -28,9 +28,16 @@ pub async fn get_access_token(
 pub async fn fetch_top_streams(
     client_id: &str,
     access_token: &str,
+    after: Option<&str>,
 ) -> Result<TwitchStreamsResponse, Box<dyn std::error::Error>> {
-    let stream_res: TwitchStreamsResponse = reqwest::Client::new()
-        .get("https://api.twitch.tv/helix/streams")
+    let mut url = "https://api.twitch.tv/helix/streams?first=100".to_string();
+
+    if let Some(cursor) = after {
+        url.push_str(&format!("&after={}", cursor));
+    }
+
+    let stream_res = reqwest::Client::new()
+        .get(&url)
         .header("Client-Id", client_id)
         .header("Authorization", format!("Bearer {}", access_token))
         .send()

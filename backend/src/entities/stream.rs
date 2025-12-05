@@ -13,6 +13,7 @@ pub struct Stream {
     pub started_at: Option<String>,
     pub language: Option<String>,
     pub thumbnail_url: Option<String>,
+    pub tag_ids: Option<String>,
     pub tags: Option<String>,
     pub is_mature: bool,
     pub polled_at: Option<String>,

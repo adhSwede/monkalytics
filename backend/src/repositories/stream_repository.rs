@@ -17,9 +17,10 @@ pub async fn insert_stream(pool: &PgPool, stream: &Stream) -> Result<(), sqlx::E
             started_at,
             language, 
             thumbnail_url,
+            tag_ids,
             tags,
             is_mature
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11, $12, $13, $14)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11, $12, $13, $14, $15)
         "#,
     )
     .bind(&stream.stream_id)
@@ -34,6 +35,7 @@ pub async fn insert_stream(pool: &PgPool, stream: &Stream) -> Result<(), sqlx::E
     .bind(&stream.started_at)
     .bind(&stream.language)
     .bind(&stream.thumbnail_url)
+    .bind(&stream.tag_ids) // Add this
     .bind(&stream.tags)
     .bind(&stream.is_mature)
     .execute(pool)
