@@ -5,11 +5,22 @@ pub async fn insert_stream(pool: &PgPool, stream: &Stream) -> Result<(), sqlx::E
     sqlx::query(
         r#"
         INSERT INTO streams (
-            stream_id, user_id, user_login, user_name, 
-            game_id, game_name, stream_type, title,
-            viewer_count, started_at, language, 
-            thumbnail_url, tags, is_mature
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            stream_id,
+            user_id,
+            user_login,
+            user_name,
+            game_id,
+            game_name,
+            stream_type,
+            title,
+            viewer_count,
+            started_at,
+            language, 
+            thumbnail_url,
+            tags,
+            is_mature
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11, $12, $13, $14)
+        ON CONFLICT stream_id UPDATE
         "#,
     )
     .bind(&stream.stream_id)

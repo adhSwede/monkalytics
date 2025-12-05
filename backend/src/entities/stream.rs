@@ -15,5 +15,4 @@ pub struct Stream {
     pub thumbnail_url: Option<String>,
     pub tags: Option<String>,
     pub is_mature: bool,
-    pub polled_at: Option<String>,
 }
