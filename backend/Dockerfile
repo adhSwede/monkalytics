@@ -19,8 +19,12 @@ RUN cargo build --release
 # Runtime stage
 FROM alpine:3.20
 
-# Install runtime dependencies
-RUN apk add --no-cache libgcc
+# Install runtime dependencies and timezone data
+RUN apk add --no-cache libgcc tzdata
+
+# Set timezone
+ENV TZ=Europe/Stockholm
+RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Copy the binary from builder
 COPY --from=builder /app/target/release/monkalytics /usr/local/bin/monkalytics
