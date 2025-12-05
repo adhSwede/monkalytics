@@ -2,10 +2,15 @@ mod api;
 mod config;
 mod db;
 mod dtos;
+mod entities;
+mod repositories;
+mod services;
 
-use api::twitch::{fetch_top_games, fetch_top_streams, get_access_token};
+use api::twitch::get_access_token;
 use config::Config;
 use db::connection::create_pool;
+use services::game_service::fetch_and_store_games;
+use services::stream_service::fetch_and_store_streams;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -18,17 +23,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let access_token = get_access_token(&config.client_id, &config.client_secret).await?;
 
-    let top_streams = fetch_top_streams(&config.client_id, &access_token).await?;
-    println!("Fetched {} streams", top_streams.data.len());
-
-    let top_games = fetch_top_games(&config.client_id, &access_token).await?;
-    println!("Fetched {} games", top_games.data.len());
-
-    println!("\nTop streams:");
-    println!("{:#?}", top_streams);
-
-    println!("\nTop games:");
-    println!("{:#?}", top_games);
+    fetch_and_store_games(&pool, &config.client_id, &access_token).await?;
+    fetch_and_store_streams(&pool, &config.client_id, &access_token).await?;
 
     Ok(())
 }

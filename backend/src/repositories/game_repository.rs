@@ -5,8 +5,12 @@ pub async fn insert_game(pool: &PgPool, game: &Game) -> Result<(), sqlx::Error> 
     sqlx::query(
         r#"
         INSERT INTO games (
-            game_id, name, box_art_url, igdb_id
+            game_id,
+            name,
+            box_art_url,
+            igdb_id
         ) VALUES ($1, $2, $3, $4)
+        ON CONFLICT (game_id) DO NOTHING
         "#,
     )
     .bind(&game.game_id)
