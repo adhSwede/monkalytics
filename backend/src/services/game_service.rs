@@ -1,6 +1,7 @@
 use crate::api::twitch::fetch_top_games;
 use crate::entities::game::Game;
 use crate::repositories::game_repository::insert_game;
+use chrono::Local;
 use sqlx::PgPool;
 
 pub async fn fetch_and_store_games(
@@ -24,6 +25,10 @@ pub async fn fetch_and_store_games(
         insert_game(pool, &game).await?
     }
 
-    println!("✓ Stored {} games", games_count);
+    println!(
+        "[{}] ✓ Stored {} games",
+        Local::now().format("%Y-%m-%d %H:%M:%S"),
+        games_count
+    );
     Ok(())
 }

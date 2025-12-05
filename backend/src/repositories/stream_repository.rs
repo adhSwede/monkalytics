@@ -20,7 +20,6 @@ pub async fn insert_stream(pool: &PgPool, stream: &Stream) -> Result<(), sqlx::E
             tags,
             is_mature
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10::timestamptz, $11, $12, $13, $14)
-        ON CONFLICT stream_id UPDATE
         "#,
     )
     .bind(&stream.stream_id)

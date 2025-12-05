@@ -1,6 +1,7 @@
 use crate::api::twitch::fetch_top_streams;
 use crate::entities::stream::Stream;
 use crate::repositories::stream_repository::insert_stream;
+use chrono::Local;
 use sqlx::PgPool;
 
 pub async fn fetch_and_store_streams(
@@ -35,11 +36,16 @@ pub async fn fetch_and_store_streams(
             thumbnail_url: Some(dto.thumbnail_url),
             tags: Some(dto.tags.join(",")),
             is_mature: dto.is_mature,
+            polled_at: None,
         };
 
         insert_stream(pool, &stream).await?;
     }
 
-    println!("✓ Stored {} streams", streams_count);
+    println!(
+        "[{}] ✓ Stored {} streams",
+        Local::now().format("%Y-%m-%d %H:%M:%S"),
+        streams_count
+    );
     Ok(())
 }
